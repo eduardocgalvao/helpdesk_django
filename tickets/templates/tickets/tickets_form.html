@@ -1,0 +1,68 @@
+{% extends "home.html" %}
+
+{% block page_title %}
+    Abrir Chamado
+{% endblock page_title %}
+
+{% block content%}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h1 class="h3 mb-1">Abrir Chamado</h1>
+                    <p class="text-muted mb-0">Preencha os dados abaixo para registrar o chamado.</p>
+                </div>
+
+                <form method="post" action="{% url 'ticket_form' %}">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="id_equipamento" class="form-label">Equipamento</label>
+                        {{ form.equipamento }}
+                        {% if form.equipamento.errors %}
+                            <div class="text-danger small">{{ form.equipamento.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Insira o equipamento referente ao seu chamado.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Descrição do problema</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Descreva seu problema</div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="id_status" class="form-label">Prioridade</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_data_fechamento" class="form-label">Data de fechamento</label>
+                            {{ form.data_fechamento }}
+                            {% if form.data_fechamento.errors %}
+                                <div class="text-danger small">{{ form.data_fechamento.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Abrir Chamado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content%}

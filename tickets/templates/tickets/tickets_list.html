@@ -1,0 +1,37 @@
+{% extends "home.html" %}
+
+{% block page_title %}
+    Lista de Chamados
+{% endblock page_title %}
+
+{% block content%}
+
+    <h1>Lista de Chamados</h1>
+
+    {% if ticket_list %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Chamado</th>
+                    <th scope="col">Equipamento</th>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for ticket in ticket_list %}
+                <tr>
+                    <th scope="row">{{ ticket.pk }}</th>
+                    <td>{{ ticket.equipamento }}</td>
+                    <td>{{ ticket.description }}</td>
+                    <td>{{ ticket.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">Nenhum chamado encontrado.</p>
+    {% endif %}
+
+{% endblock content%}
