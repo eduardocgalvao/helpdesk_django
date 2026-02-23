@@ -16,21 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.contrib.auth.views import LogoutView, LoginView
 
 from tickets.views import(
     TicketListView,
     TicketCreateView,
     TicketUpdateView,
     TicketDeleteView,
+    TicketCompleteView,
     SignUpView,
+   
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', SignUpView.as_view(), name="register"),
+    path('accounts/logout/', LogoutView.as_view(next_page='login'), name="logout"),
     path('', TicketListView.as_view(), name="tickets_list"),
     path('create', TicketCreateView.as_view(), name="ticket_form"),
     path('update/<int:pk>', TicketUpdateView.as_view(), name="ticket_update"),
     path('delete/<int:pk>', TicketDeleteView.as_view(), name="ticket_delete"),
+    path('complete/<int:pk>', TicketCompleteView.as_view(), name="ticket_complete"),
 ]

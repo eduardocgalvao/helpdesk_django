@@ -1,0 +1,75 @@
+{% extends "home.html" %}
+
+{% block page_title %}
+    Confirmar Exclusão
+{% endblock page_title %}
+
+{% block content%}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-circle"></i> 
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                </div>
+
+                <h5 class="mb-3">Você tem certeza que deseja excluir este chamado?</h5>
+
+                <div class="border rounded p-3 mb-4 bg-light">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <strong>Chamado:</strong> #{{ object.pk }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Equipamento:</strong> {{ object.equipamento }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <strong>Descrição:</strong> {{ object.description }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <strong>Status:</strong> {{ object.status }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Data de Abertura:</strong> {{ object.data_abertura|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" id="deleteForm">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'tickets_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Sim, Excluir Chamado
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.getElementById('deleteForm').addEventListener('submit', function(e) {
+    // Definir notificação vermelha (danger) de exclusão
+    sessionStorage.setItem('notification', JSON.stringify({
+      message: 'Chamado excluído com sucesso!',
+      type: 'danger'
+    }));
+  });
+</script>
+
+{% endblock content%}

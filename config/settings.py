@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'tickets',
     'crispy_forms',
     'crispy_bootstrap4',
+    
 ]
 
 MIDDLEWARE = [

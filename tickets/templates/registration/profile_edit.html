@@ -1,0 +1,116 @@
+{% extends "home.html" %}
+
+{% block page_title %}
+    Editar Perfil
+{% endblock page_title %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-circle"></i> Editar Perfil
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 4rem; color: #0d6efd;"></i>
+                    </div>
+                    <h5 class="mb-1">{{ user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                </div>
+
+                <hr class="mb-4">
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">
+                            <i class="bi bi-person"></i> Nome de Usuário
+                        </label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                            id="id_username" 
+                            value="{{ form.username.value|default:user.username }}"
+                            required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Máximo de 150 caracteres. Letras, números e @/./+/-/_ apenas.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                            id="id_email" 
+                            value="{{ form.email.value|default:user.email }}">
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.email.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Insira um endereço de email válido.
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-shield-lock"></i> 
+                        <strong>Informação:</strong> Para alterar sua senha, utilize a opção "Esqueci minha senha" na página de login.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Salvar Alterações
+                        </button>
+                        <a href="{% url 'tickets_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-muted bg-light">
+                <small>
+                    <i class="bi bi-calendar-check"></i> 
+                    Membro desde: {{ user.date_joined|date:"d/m/Y" }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function(e) {
+    // Definir notificação verde de sucesso para edição de perfil
+    sessionStorage.setItem('notification', JSON.stringify({
+      message: 'Perfil atualizado com sucesso!',
+      type: 'success'
+    }));
+  });
+</script>
+
+{% endblock content %}

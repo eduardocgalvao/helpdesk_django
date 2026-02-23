@@ -8,30 +8,217 @@
 
     <h1>Lista de Chamados</h1>
 
-    {% if ticket_list %}
+    {% if tickets %}
         <table class="table">
             <thead>
                 <tr>
                     <th scope="col">Chamado</th>
                     <th scope="col">Equipamento</th>
                     <th scope="col">Descrição</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Prioridade</th>
+                    <th scope="col">Fechado em:</th>
+                    <th scope="col">Ações</th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for ticket in ticket_list %}
+                {% for ticket in tickets %}
                 <tr>
                     <th scope="row">{{ ticket.pk }}</th>
                     <td>{{ ticket.equipamento }}</td>
                     <td>{{ ticket.description }}</td>
                     <td>{{ ticket.status }}</td>
+                    <td>{{ ticket.data_fechamento | default:"Aberto" }}</td>
+                    <td>
+                        <button 
+                            class="btn btn-info btn-sm" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#showModal{{ ticket.pk }}">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+
+                        <a  href="{% url "ticket_update" pk=ticket.pk %}"
+                            class="btn btn-warning btn-sm" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editModal{{ ticket.pk }}"
+                            {% if ticket.data_fechamento %}disabled{% endif %}>
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+
+                        <a href="{% url 'ticket_complete' pk=ticket.pk %}"
+                            class="btn btn-success btn-sm complete-ticket-btn" 
+                            {% if ticket.data_fechamento %}disabled{% endif %}>
+                            <i class="bi bi-check-circle"></i> Concluir
+                        </a>
+
+                        <a href="{% url 'ticket_delete' pk=ticket.pk %}"
+                            class="btn btn-danger btn-sm" 
+                            {% if ticket.data_fechamento %}disabled{% endif %}>
+                            <i class="bi bi-trash"></i> Deletar
+                        </a>
+                    </td>
                 </tr>
+
+                <!-- Modal de Visualização para cada ticket -->
+                <div class="modal fade" id="showModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="showModalLabel{{ ticket.pk }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="showModalLabel{{ ticket.pk }}">
+                                    <i class="bi bi-ticket-detailed"></i> Detalhes do Chamado #{{ ticket.pk }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Número do Chamado</h6>
+                                        <p class="fs-5 fw-bold">#{{ ticket.pk }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Status</h6>
+                                        <p class="fs-5">
+                                            {% if ticket.data_fechamento %}
+                                                <span class="badge bg-success">Concluído</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Aberto</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h6 class="text-muted mb-1">Equipamento</h6>
+                                        <p class="fs-5">{{ ticket.equipamento }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h6 class="text-muted mb-1">Descrição do Problema</h6>
+                                        <p class="border rounded p-3 bg-light">{{ ticket.description }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Prioridade</h6>
+                                        <p class="fs-5">
+                                            <span class="badge bg-primary">{{ ticket.status }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Usuário</h6>
+                                        <p class="fs-5">{{ ticket.usuario.username }}</p>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Data de Abertura</h6>
+                                        <p class="fs-6">
+                                            <i class="bi bi-calendar-check"></i> {{ ticket.data_abertura|date:"d/m/Y" }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted mb-1">Data de Fechamento</h6>
+                                        <p class="fs-6">
+                                            {% if ticket.data_fechamento %}
+                                                <i class="bi bi-calendar-x"></i> {{ ticket.data_fechamento|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">Ainda não concluído</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                {% if not ticket.data_fechamento %}
+                                <button type="button" class="btn btn-warning" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#editModal{{ ticket.pk }}">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de Edição para cada ticket -->
+                <div class="modal fade" id="editModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="editModalLabel{{ ticket.pk }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ ticket.pk }}">Editar Chamado #{{ ticket.pk }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method= 'post' action="{% url 'ticket_update' pk=ticket.pk %}" class="edit-ticket-form">
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    
+                                    <div class="mb-3">
+                                        <label for="equipamento{{ ticket.pk }}" class="form-label">Equipamento</label>
+                                        <input type="text" class="form-control" id="equipamento{{ ticket.pk }}" 
+                                               name="equipamento" value="{{ ticket.equipamento }}" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="description{{ ticket.pk }}" class="form-label">Descrição</label>
+                                        <textarea class="form-control" id="description{{ ticket.pk }}" 
+                                                  name="description" rows="3" required>{{ ticket.description }}</textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="status{{ ticket.pk }}" class="form-label">Prioridade</label>
+                                        <select class="form-select" id="status{{ ticket.pk }}" name="status" required>
+                                            <option value="{{ ticket.status.pk }}" selected>{{ ticket.status }}</option>
+                                            {% comment %} Adicione outras opções de status aqui {% endcomment %}
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
         <p class="text-muted">Nenhum chamado encontrado.</p>
     {% endif %}
+
+<script>
+  // Adicionar evento de submit nos formulários de edição
+  document.querySelectorAll('.edit-ticket-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      // Definir notificação verde de sucesso para edição
+      sessionStorage.setItem('notification', JSON.stringify({
+        message: 'Chamado editado com sucesso!',
+        type: 'success'
+      }));
+    });
+  });
+
+  // Adicionar evento de click nos botões de concluir
+  document.querySelectorAll('.complete-ticket-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      // Definir notificação verde de sucesso para conclusão
+      sessionStorage.setItem('notification', JSON.stringify({
+        message: 'Chamado concluído com sucesso!',
+        type: 'success'
+      }));
+    });
+  });
+</script>
 
 {% endblock content%}

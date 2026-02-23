@@ -47,22 +47,25 @@
                             {% if form.status.errors %}
                                 <div class="text-danger small">{{ form.status.errors }}</div>
                             {% endif %}
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label for="id_data_fechamento" class="form-label">Data de fechamento</label>
-                            {{ form.data_fechamento }}
-                            {% if form.data_fechamento.errors %}
-                                <div class="text-danger small">{{ form.data_fechamento.errors }}</div>
-                            {% endif %}
-                        </div>
+                        </div> 
                     </div>
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Abrir Chamado</button>
+                        <button type="submit" class="btn btn-success btn-lg">Abrir Chamado</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function(e) {
+    // Definir notificação verde de sucesso
+    sessionStorage.setItem('notification', JSON.stringify({
+      message: 'Seu chamado foi aberto com sucesso!',
+      type: 'success'
+    }));
+  });
+</script>
 
 {% endblock content%}
