@@ -1,4 +1,5 @@
 {% extends "home.html" %}
+{% load crispy_forms_field %}
 
 {% block page_title %}
     Abrir Chamado
@@ -6,10 +7,61 @@
 
 {% block content%}
 
-<div class="row justify-content-center">
-    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
-        <div class="card shadow-sm">
-            <div class="card-body p-4 p-md-5">
+<style>
+    /* Estilos gerais dos inputs */
+    #id_equipamento,
+    #id_description,
+    #id_status {
+        border: 2px solid #e0e0e0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    /* Focus states */
+    #id_equipamento:focus,
+    #id_description:focus,
+    #id_status:focus {
+        border-color: #198754;
+        background-color: #f8fff9;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+    }
+
+    /* Textarea específico */
+    #id_description {
+        height: 120px;
+        resize: vertical;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    /* Labels melhorados */
+    .form-label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .form-label i {
+        margin-right: 0.5rem;
+        color: #198754;
+    }
+
+    /* Textos de ajuda */
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+        <div class="card shadow">
+            <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <h1 class="h3 mb-1">Abrir Chamado</h1>
                     <p class="text-muted mb-0">Preencha os dados abaixo para registrar o chamado.</p>
@@ -25,25 +77,31 @@
                     {% endif %}
 
                     <div class="mb-3">
-                        <label for="id_equipamento" class="form-label">Equipamento</label>
-                        {{ form.equipamento }}
+                        <label for="id_equipamento" class="form-label fw-500">
+                            <i class="bi bi-laptop"></i> Equipamento
+                        </label>
+                        {% crispy_field form.equipamento %}
                         {% if form.equipamento.errors %}
                             <div class="text-danger small">{{ form.equipamento.errors }}</div>
                         {% endif %}
                         <div class="form-text">Insira o equipamento referente ao seu chamado.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="id_description" class="form-label">Descrição do problema</label>
-                        {{ form.description }}
+                        <label for="id_description" class="form-label fw-500 d-block">
+                            <i class="bi bi-chat-left-text"></i> Descrição do problema
+                        </label>
+                        {% crispy_field form.description %}
                         {% if form.description.errors %}
                             <div class="text-danger small">{{ form.description.errors }}</div>
                         {% endif %}
-                        <div class="form-text">Descreva seu problema</div>
+                        <div class="form-text">Descreva seu problema detalhadamente para melhor atendimento.</div>
                     </div>
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
-                            <label for="id_status" class="form-label">Prioridade</label>
-                            {{ form.status }}
+                            <label for="id_status" class="form-label fw-500">
+                                <i class="bi bi-flag"></i> Prioridade
+                            </label>
+                            {% crispy_field form.status %}
                             {% if form.status.errors %}
                                 <div class="text-danger small">{{ form.status.errors }}</div>
                             {% endif %}

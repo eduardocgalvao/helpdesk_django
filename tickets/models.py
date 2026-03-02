@@ -17,6 +17,7 @@ class Tickets(models.Model):
     description = models.TextField(max_length=200)
     data_abertura = models.DateField(auto_now_add=True, null=False, blank=False)
     data_fechamento = models.DateField(null=True, blank=True)
+    comment = models.TextField(max_length=500, null=True, blank=True)
 
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,

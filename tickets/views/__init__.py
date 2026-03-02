@@ -4,6 +4,7 @@ from .tickets_view import (
     TicketUpdateView,
     TicketDeleteView,
     TicketCompleteView,
+    DashboardView,
     HomeView,
 )
 from .user_view import SignUpView, ProfileUpdateView
@@ -14,6 +15,7 @@ __all__ = [
     "TicketUpdateView",
     "TicketDeleteView",
     "TicketCompleteView",
+    "DashboardView",
     "HomeView",
     "SignUpView",
     "ProfileUpdateView",

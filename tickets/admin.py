@@ -14,6 +14,7 @@ class TicketsAdmin(admin.ModelAdmin):
 	list_display = ("id", "equipamento", "status", "usuario", "data_abertura", "data_fechamento")
 	list_filter = ("status", "data_abertura")
 	search_fields = ("equipamento", "description", "usuario__username")
+	readonly_fields = ("data_abertura", "data_fechamento", "comment")
 
 
 @admin.register(Status)

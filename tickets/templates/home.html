@@ -22,9 +22,12 @@
         <li class="nav-item">
           <a class="nav-link text-white" href="{% url "ticket_form" %}">Abrir Chamado</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link disabled text-white-50" aria-disabled="true">Disabled</a>
-        </li>
+        {% if request.user.is_superuser %}
+           <li class="nav-item">
+          <a href = "{% url "dashboard" %}"class="nav-link  text-white" >Dashboard</a>
+          </li>
+        {% endif %}
+       
       </ul>
       
       {% if user.is_authenticated %}

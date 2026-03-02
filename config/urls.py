@@ -24,6 +24,7 @@ from tickets.views import(
     TicketUpdateView,
     TicketDeleteView,
     TicketCompleteView,
+    DashboardView,
     SignUpView,
    
 )
@@ -33,6 +34,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', SignUpView.as_view(), name="register"),
     path('accounts/logout/', LogoutView.as_view(next_page='login'), name="logout"),
+    path('dashboard/', DashboardView.as_view(), name="dashboard"),
     path('', TicketListView.as_view(), name="tickets_list"),
     path('create', TicketCreateView.as_view(), name="ticket_form"),
     path('update/<int:pk>', TicketUpdateView.as_view(), name="ticket_update"),

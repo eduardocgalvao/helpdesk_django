@@ -1,4 +1,7 @@
+
 {% extends "home.html" %}
+
+{% load extra_auth %}
 
 {% block page_title %}
     Lista de Chamados
@@ -16,6 +19,7 @@
                     <th scope="col">Equipamento</th>
                     <th scope="col">Descrição</th>
                     <th scope="col">Prioridade</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Fechado em:</th>
                     <th scope="col">Ações</th>
                 </tr>
@@ -28,7 +32,23 @@
                     <td>{{ ticket.equipamento }}</td>
                     <td>{{ ticket.description }}</td>
                     <td>{{ ticket.status }}</td>
-                    <td>{{ ticket.data_fechamento | default:"Aberto" }}</td>
+                    <td>
+                        {% if ticket.data_fechamento %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Concluído
+                            </span>
+                            {% if ticket.comment %}
+                                <i class="bi bi-chat-left-text-fill text-success ms-1" 
+                                   title="Comentário disponível" 
+                                   data-bs-toggle="tooltip"></i>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-hourglass-split"></i> Aberto
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.data_fechamento | default:"—" }}</td>
                     <td>
                         <button 
                             class="btn btn-info btn-sm" 
@@ -37,25 +57,36 @@
                             <i class="bi bi-eye"></i> Ver
                         </button>
 
-                        <a  href="{% url "ticket_update" pk=ticket.pk %}"
+                            <!--Identifica se o usuário e gestor ou admin parar editar e confirmar a conclusão do chamado -->
+                             {% if request.user|has_group:"Gestor" or request.user.is_superuser %}
+                                     <a  href="{% url "ticket_update" pk=ticket.pk %}"
                             class="btn btn-warning btn-sm" 
                             data-bs-toggle="modal" 
                             data-bs-target="#editModal{{ ticket.pk }}"
                             {% if ticket.data_fechamento %}disabled{% endif %}>
                             <i class="bi bi-pencil"></i> Editar
                         </a>
+                        {% endif %}
+                        {% if request.user|has_group:"Gestor" or request.user.is_superuser %}
+                            <button 
+                                class="btn btn-success btn-sm complete-ticket-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#commentModal{{ ticket.pk }}"
+                                {% if ticket.data_fechamento %}disabled{% endif %}>
+                                <i class="bi bi-check-circle"></i> Concluir
+                            </button>
+                        {% endif %}    
 
-                        <a href="{% url 'ticket_complete' pk=ticket.pk %}"
-                            class="btn btn-success btn-sm complete-ticket-btn" 
-                            {% if ticket.data_fechamento %}disabled{% endif %}>
-                            <i class="bi bi-check-circle"></i> Concluir
-                        </a>
+                        
+                            <!-- Somente o Admin pode excluir o chamado -->
+                        {% if request.user.is_superuser %}
+                            <a href="{% url 'ticket_delete' pk=ticket.pk %}"
+                                class="btn btn-danger btn-sm" 
+                                {% if ticket.data_fechamento %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i> Deletar
+                            </a>
+                        {% endif %}
 
-                        <a href="{% url 'ticket_delete' pk=ticket.pk %}"
-                            class="btn btn-danger btn-sm" 
-                            {% if ticket.data_fechamento %}disabled{% endif %}>
-                            <i class="bi bi-trash"></i> Deletar
-                        </a>
                     </td>
                 </tr>
 
@@ -107,7 +138,7 @@
                                     <div class="col-md-6 mb-3">
                                         <h6 class="text-muted mb-1">Prioridade</h6>
                                         <p class="fs-5">
-                                            <span class="badge bg-primary">{{ ticket.status }}</span>
+                                            <span class="badge bg-{{ ticket.status|priority_badge_color }}">{{ ticket.status }}</span>
                                         </p>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -136,6 +167,26 @@
                                         </p>
                                     </div>
                                 </div>
+
+                                {% if ticket.comment and ticket.data_fechamento %}
+                                <hr class="my-3">
+                                
+                                <div class="alert alert-success" role="alert">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-chat-left-text-fill fs-4 me-3 text-success"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="alert-heading mb-2">
+                                                <i class="bi bi-check-circle-fill"></i> Comentário da Resolução
+                                            </h6>
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ ticket.comment }}</p>
+                                            <hr class="my-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> Resolvido em {{ ticket.data_fechamento|date:"d/m/Y" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -190,6 +241,49 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal de Comentário para Conclusão do Ticket -->
+                <div class="modal fade" id="commentModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="commentModalLabel{{ ticket.pk }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="commentModalLabel{{ ticket.pk }}">
+                                    <i class="bi bi-chat-left-text"></i> Comentário - Concluir Chamado #{{ ticket.pk }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method="post" action="{% url 'ticket_complete' pk=ticket.pk %}" class="complete-ticket-form">
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-info-circle"></i> Adicione um comentário antes de concluir o chamado.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <label for="comment{{ ticket.pk }}" class="form-label fw-500">
+                                            <i class="bi bi-pencil-square"></i> Seu Comentário
+                                        </label>
+                                        <textarea 
+                                            class="form-control" 
+                                            id="comment{{ ticket.pk }}" 
+                                            name="comment" 
+                                            rows="4" 
+                                            placeholder="Descreva a solução implementada ou motivo da conclusão..."
+                                            required></textarea>
+                                        <small class="form-text text-muted">Campo obrigatório</small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Concluir Chamado
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
@@ -209,15 +303,32 @@
     });
   });
 
-  // Adicionar evento de click nos botões de concluir
-  document.querySelectorAll('.complete-ticket-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      // Definir notificação verde de sucesso para conclusão
+  // Adicionar evento de submit no formulário de comentário/conclusão
+  document.querySelectorAll('.complete-ticket-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      // Desabilitar o botão de submit após envio
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processando...';
+      
+      // Definir notificação de sucesso
       sessionStorage.setItem('notification', JSON.stringify({
         message: 'Chamado concluído com sucesso!',
         type: 'success'
       }));
     });
+  });
+
+  // Desabilitar botões de conclusão que já possuem data_fechamento
+  document.querySelectorAll('.complete-ticket-btn[disabled]').forEach(function(btn) {
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  });
+
+  // Ativar tooltips do Bootstrap
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
   });
 </script>
 

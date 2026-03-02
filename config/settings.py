@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Django default middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +62,31 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # Custom middleware - Order matters!
+    # Response processing (must be early)
+    'tickets.middleware.response_processing.ResponseFormattingMiddleware',
+    'tickets.middleware.response_processing.CompressionMiddleware',
+    
+    # Request processing
+    'tickets.middleware.logging.RequestLoggingMiddleware',
+    'tickets.middleware.security.RequestValidationMiddleware',
+    'tickets.middleware.security.CORSMiddleware',
+    
+    # Authentication and Authorization (renamed to avoid conflict)
+    'tickets.middleware.authentication.PermissionMiddleware',
+    'tickets.middleware.authentication.SessionSecurityMiddleware',
+    
+    # Security
+    'tickets.middleware.security.RateLimitingMiddleware',
+    'tickets.middleware.security.SecurityHeadersMiddleware',
+    
+    # Logging and Monitoring
+    'tickets.middleware.logging.UserActivityMiddleware',
+    'tickets.middleware.logging.PerformanceMonitoringMiddleware',
+    
+    # Error Handling (should be late)
+    'tickets.middleware.error_handling.ErrorHandlingMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -138,5 +164,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 LOGIN_REDIRECT_URL = 'tickets_list'
+
+LOGOUT_REDIRECT_URL = 'login'
 
 AUTH_USER_MODEL = 'tickets.User'

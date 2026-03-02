@@ -1,0 +1,304 @@
+{% extends "home.html" %}
+
+{% load extra_auth %}
+
+{% block page_title %}
+    Dashboard
+{% endblock page_title %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Header do Dashboard -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+        <div>
+            <span class="text-muted">
+                <i class="bi bi-calendar-event"></i> 
+                {{ now|date:"d \d\e F \d\e Y" }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Cards de Métricas -->
+    <div class="row mb-4">
+        <!-- Total de Chamados -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total de Chamados</h6>
+                            <h3 class="mb-0">{{ total_tickets }}</h3>
+                        </div>
+                        <div style="font-size: 2rem; color: #0d6efd; opacity: 0.3;">
+                            <i class="bi bi-ticket"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chamados Abertos -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Abertos</h6>
+                            <h3 class="mb-0 text-warning">{{ open_tickets }}</h3>
+                        </div>
+                        <div style="font-size: 2rem; color: #ffc107; opacity: 0.3;">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chamados Concluídos -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Concluídos</h6>
+                            <h3 class="mb-0 text-success">{{ closed_tickets }}</h3>
+                        </div>
+                        <div style="font-size: 2rem; color: #198754; opacity: 0.3;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taxa de Conclusão -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-left-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Taxa de Conclusão</h6>
+                            <h3 class="mb-0 text-info">{{ completion_rate }}%</h3>
+                        </div>
+                        <div style="font-size: 2rem; color: #0dcaf0; opacity: 0.3;">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Tabelas -->
+    <div class="row">
+        <!-- Gráfico de Status -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart"></i> Status dos Chamados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-center" style="max-height: 250px;">
+                        <div style="width: 100%; max-width: 250px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Prioridade -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart"></i> Chamados por Prioridade
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div style="max-height: 250px;">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Últimos Chamados -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Últimos Chamados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Equipamento</th>
+                                    <th scope="col">Descrição</th>
+                                    <th scope="col">Prioridade</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Data de Abertura</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in recent_tickets %}
+                                <tr>
+                                    <th scope="row">#{{ ticket.id }}</th>
+                                    <td>{{ ticket.equipamento }}</td>
+                                    <td>{{ ticket.description }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ ticket.status|priority_badge_color }}">{{ ticket.status.status_name }}</span>
+                                    </td>
+                                    <td>
+                                        {% if ticket.data_fechamento %}
+                                            <span class="badge bg-success">Concluído</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Aberto</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ ticket.data_abertura|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox"></i> Nenhum chamado encontrado
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos personalizados -->
+<style>
+    .border-left-primary {
+        border-left: 4px solid #0d6efd !important;
+    }
+    .border-left-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    .border-left-success {
+        border-left: 4px solid #198754 !important;
+    }
+    .border-left-info {
+        border-left: 4px solid #0dcaf0 !important;
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Converter dados Python do Django para JavaScript
+    const ticketData = {
+        byStatus: {{ by_status|safe }},
+        byPriority: {{ by_priority|safe }}
+    };
+
+    // Gráfico de Status (Pizza)
+    function createStatusChart() {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(ticketData.byStatus),
+                datasets: [{
+                    data: Object.values(ticketData.byStatus),
+                    backgroundColor: ['#ffc107', '#198754'],
+                    borderColor: ['#fff', '#fff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico de Prioridade (Barras)
+    function createPriorityChart() {
+        const ctx = document.getElementById('priorityChart').getContext('2d');
+        const labels = Object.keys(ticketData.byPriority);
+        const data = Object.values(ticketData.byPriority);
+        
+        // Mapear cores por prioridade
+        const colorMap = {
+            'Alta': '#dc3545',      // Vermelho
+            'Média': '#ffc107',     // Amarelo
+            'Media': '#ffc107',     // Amarelo (sem acento)
+            'Baixa': '#198754'      // Verde
+        };
+        
+        const colors = labels.map(label => colorMap[label] || '#6c757d');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Quantidade de Chamados',
+                    data: data,
+                    backgroundColor: colors,
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Inicializar gráficos
+    document.addEventListener('DOMContentLoaded', function() {
+        createStatusChart();
+        createPriorityChart();
+    });
+</script>
+
+{% endblock content %}
